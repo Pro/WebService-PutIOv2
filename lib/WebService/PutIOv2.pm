@@ -86,7 +86,7 @@ sub _makeRequest {
 	my $json = decode_json( $resp->content );
 	
 	if ($json->{"status"} eq "ERROR") {
-		print "ERROR! Request failed for url $url:" . $json->{'error_message'};
+		print "ERROR! Request failed for url $url:" . $json->{'error_message'} . "\n";
 		return;
 	}
 	return $json;
@@ -95,12 +95,14 @@ sub _makeRequest {
 sub getFilesList {
 	my ($self, $folderID) = @_;
 	my $json_files=$self->_makeRequest("/files/list",1,parent_id => $folderID);
+	return unless ($json_files);
 	return @{$json_files->{files}};
 }
 
 sub getFileInfo {
 	my ($self, $fileId) = @_;
 	my $json_files=$self->_makeRequest("/files/".$fileId,1);
+	return unless ($json_files);
 	return $json_files->{file};
 }
 
@@ -112,6 +114,7 @@ sub getDownloadUrl {
 sub deleteFile {
 	my ($self, $folderID) = @_;
 	my $status = $self->_makeRequest("/files/delete",0,file_ids => $folderID);
+	return unless ($status);
 	return $status->{"status"} eq "OK";
 }
 
