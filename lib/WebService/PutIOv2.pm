@@ -98,6 +98,12 @@ sub getFilesList {
 	return @{$json_files->{files}};
 }
 
+sub getFileInfo {
+	my ($self, $fileId) = @_;
+	my $json_files=$self->_makeRequest("/files/".$fileId,1);
+	return $json_files->{file};
+}
+
 sub getDownloadUrl {
 	my ($self, $fileID) = @_;
 	return $self->_makeRequest("/files/".$fileID."/download",1);
@@ -106,7 +112,6 @@ sub getDownloadUrl {
 sub deleteFile {
 	my ($self, $folderID) = @_;
 	my $status = $self->_makeRequest("/files/delete",0,file_ids => $folderID);
-	print Dumper($status);
 	return $status->{"status"} eq "OK";
 }
 
