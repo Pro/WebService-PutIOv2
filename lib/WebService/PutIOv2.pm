@@ -61,10 +61,14 @@ sub new {
 }
 
 sub _makeRequest {
-	my ($self, $url, $isget, %params) = @_;
+	my ($self, $url, $isget, $recursive_count, %params) = @_;
 	my $ua = $self->{"ua"};
 	my $resp;
 	my $uri;
+	
+	if ($recursive_count > 5) {
+		die "Endless redirect to location: " . $url;
+	}
 	if ($isget) {
 		$uri = URI->new($PUTIO_BASE_URL . $url);
 		$params{'oauth_token'} = $self->{'access_token'};
@@ -81,7 +85,7 @@ sub _makeRequest {
 	}
 	
 	if ($resp->code == 302) {
-		return $resp->header( "Location" )
+		return $self->_makeRequest($resp->header( "Location" ), $isget, $recursive_count+1, %params);
 	}
 	my $json = decode_json( $resp->content );
 	
@@ -94,26 +98,26 @@ sub _makeRequest {
 
 sub getFilesList {
 	my ($self, $folderID) = @_;
-	my $json_files=$self->_makeRequest("/files/list",1,parent_id => $folderID);
+	my $json_files=$self->_makeRequest("/files/list",1,0,parent_id => $folderID);
 	return unless ($json_files);
 	return @{$json_files->{files}};
 }
 
 sub getFileInfo {
 	my ($self, $fileId) = @_;
-	my $json_files=$self->_makeRequest("/files/".$fileId,1);
+	my $json_files=$self->_makeRequest("/files/".$fileId,1,0);
 	return unless ($json_files);
 	return $json_files->{file};
 }
 
 sub getDownloadUrl {
 	my ($self, $fileID) = @_;
-	return $self->_makeRequest("/files/".$fileID."/download",1);
+	return $self->_makeRequest("/files/".$fileID."/download",1,0);
 }
 
 sub deleteFile {
 	my ($self, $folderID) = @_;
-	my $status = $self->_makeRequest("/files/delete",0,file_ids => $folderID);
+	my $status = $self->_makeRequest("/files/delete",0,0,file_ids => $folderID);
 	return unless ($status);
 	return $status->{"status"} eq "OK";
 }
