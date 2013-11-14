@@ -52,7 +52,7 @@ sub new {
 	my $self = {};
 	$self->{'access_token'} = delete $params{'access_token'};
 
-	my $ua = LWP::UserAgent->new(max_redirect => 0);
+	my $ua = LWP::UserAgent->new();
 	$ua->timeout(10);
 	$ua->env_proxy;
 	#$ua->proxy(['http', 'https'], 'http://localhost:8888');
@@ -84,9 +84,6 @@ sub _makeRequest {
 		 return;
 	}
 	
-	if ($resp->code == 302) {
-		return $self->_makeRequest($resp->header( "Location" ), $isget, $recursive_count+1, %params);
-	}
 	my $json = decode_json( $resp->content );
 	
 	if ($json->{"status"} eq "ERROR") {
