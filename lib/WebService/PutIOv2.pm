@@ -78,7 +78,7 @@ sub _makeRequest {
 	}
 	
 	if (!$resp->is_success && !$resp->is_redirect) {
-		 print "Request $uri failed: " . $resp->status_line;
+		 die "Request $uri failed: " . $resp->status_line;
 		 return;
 	}
 	
@@ -90,7 +90,7 @@ sub _makeRequest {
 	my $json = decode_json( $resp->content );
 	
 	if ($json->{"status"} eq "ERROR") {
-		print "ERROR! Request failed for url $url:" . $json->{'error_message'} . "\n";
+		die "ERROR! Request failed for url $url:" . $json->{'error_message'} . "\n";
 		return;
 	}
 	return $json;
